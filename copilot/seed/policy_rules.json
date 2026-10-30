@@ -1,0 +1,21 @@
+{
+  "policy_currency": "INR",
+  "flight": {
+    "default_cabin": "economy",
+    "premium_economy_min_hours": 6,
+    "business_class_min_hours": 8,
+    "upgrade_approver": "Director",
+    "max_stops_preferred": 1
+  },
+  "hotel": {
+    "max_stars": 4,
+    "nightly_budget": { "domestic": 6000, "international": 12000 },
+    "over_budget_approver": "Line manager"
+  },
+  "booking": {
+    "advance_days_recommended": 14,
+    "short_notice_approver": "Line manager"
+  },
+  "per_diem": { "domestic": 2000, "international": 4500 },
+  "leave": { "advance_days": 7 }
+}

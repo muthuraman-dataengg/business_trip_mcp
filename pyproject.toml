@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "business-trip-copilot"
+version = "2.0.0"
+description = "Enterprise business-trip copilot built on MCP: travel, policy and work servers, a LangChain host and a Streamlit UI."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=2.3,<3",
+    "fastmcp>=4.1",
+    "langchain[mcp]>=1.4.7",
+    "langchain-core>=1.0",
+    "langchain-openai>=1.0",
+    "langgraph>=1.0",
+    "pydantic>=2.8",
+    "pydantic-settings>=2.4",
+    "python-dotenv>=1.0",
+    "httpx>=0.27",
+    "uvicorn>=0.30",
+    "starlette>=0.40",
+    "tzdata>=2024.1",
+]
+
+[project.optional-dependencies]
+ui = ["streamlit>=1.38", "pandas>=2.1", "altair>=5.0"]
+dev = ["pytest>=8", "anyio>=4", "ipykernel>=6", "nbformat>=5", "nbclient>=0.10"]
+
+[project.scripts]
+trip-copilot = "copilot.cli:main"
+trip-travel-mcp = "copilot.servers.travel:main"
+trip-policy-mcp = "copilot.servers.policy:main"
+trip-work-mcp = "copilot.servers.work:main"
+
+[tool.setuptools.packages.find]
+include = ["copilot*"]
+
+[tool.setuptools.package-data]
+copilot = ["seed/*.json", "seed/policies/*.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

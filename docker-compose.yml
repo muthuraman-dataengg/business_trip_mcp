@@ -1,0 +1,57 @@
+# docker compose up --build    ->  UI on http://localhost:8501, MCP servers on 8001-8003
+x-common: &common
+  build: .
+  env_file: .env
+  volumes:
+    - copilot-data:/app/data
+  restart: unless-stopped
+  environment:
+    # DNS-rebinding protection: only these Host headers reach the MCP endpoints
+    MCP_ALLOWED_HOSTS: "travel:*,policy:*,work:*,localhost:*,127.0.0.1:*"
+
+x-health: &health
+  interval: 10s
+  timeout: 3s
+  retries: 5
+
+services:
+  travel:
+    <<: *common
+    command: ["python", "-m", "copilot.servers.travel", "--transport", "http", "--host", "0.0.0.0", "--port", "8001"]
+    ports: ["8001:8001"]
+    healthcheck:
+      <<: *health
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8001/healthz')"]
+
+  policy:
+    <<: *common
+    command: ["python", "-m", "copilot.servers.policy", "--transport", "http", "--host", "0.0.0.0", "--port", "8002"]
+    ports: ["8002:8002"]
+    healthcheck:
+      <<: *health
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8002/healthz')"]
+
+  work:
+    <<: *common
+    command: ["python", "-m", "copilot.servers.work", "--transport", "http", "--host", "0.0.0.0", "--port", "8003"]
+    ports: ["8003:8003"]
+    healthcheck:
+      <<: *health
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8003/healthz')"]
+
+  ui:
+    <<: *common
+    command: ["streamlit", "run", "ui/app.py", "--server.address", "0.0.0.0", "--server.port", "8501"]
+    ports: ["8501:8501"]
+    environment:
+      MCP_TRANSPORT: http
+      TRAVEL_MCP_URL: http://travel:8001/mcp
+      POLICY_MCP_URL: http://policy:8002/mcp
+      WORK_MCP_URL: http://work:8003/mcp
+    depends_on:
+      travel: { condition: service_healthy }
+      policy: { condition: service_healthy }
+      work: { condition: service_healthy }
+
+volumes:
+  copilot-data:
